@@ -1,0 +1,23 @@
+sudo apt-get install sleuthkit
+
+sudo apt-get install gparted
+
+sudo gparted
+
+df -h
+
+sudo dd if=/dev/sdb1 of=/home/pds_lab_11/Desktop/SFLAB/pd.img
+
+fsstat pd.img
+
+fls pd.img
+
+istat pd.img 5
+
+ils pd.img 5
+
+blkstat pd.img 5
+
+md5sum pd.img
+
+ffind pd.img 5
