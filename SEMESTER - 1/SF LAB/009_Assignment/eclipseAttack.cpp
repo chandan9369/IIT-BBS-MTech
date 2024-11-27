@@ -3,7 +3,6 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
-#include <set>
 
 using namespace std;
 
@@ -26,10 +25,11 @@ public:
     unordered_map<string, string> data;
     Node *successor;
     Node *predecessor;
-    bool isMalicious = false; // Indicates if the node is malicious (for eclipse attack)
+    bool isMalicious = false;
 
     Node(int id) : id(id), successor(this), predecessor(this) {}
 
+    // Store data on the responsible node
     void storeData(const string &key, const string &value)
     {
         int keyHash = hashKey(key);
@@ -38,6 +38,7 @@ public:
         cout << "Stored key '" << key << "' at Node " << responsibleNode->id << endl;
     }
 
+    // Lookup data from the responsible node
     string lookupData(const string &key)
     {
         int keyHash = hashKey(key);
@@ -52,6 +53,7 @@ public:
         }
     }
 
+    // Find the successor node responsible for a given hash
     Node *findSuccessor(int keyHash)
     {
         if (inInterval(keyHash, id, successor->id) || keyHash == successor->id)
@@ -60,28 +62,31 @@ public:
         }
         else
         {
-            return closestPrecedingNode(keyHash)->findSuccessor(keyHash);
+            Node *current = successor;
+            while (!inInterval(keyHash, current->id, current->successor->id))
+            {
+                current = current->successor;
+                if (current == this)
+                    break; // Prevent infinite loop in a broken ring
+            }
+            return current->successor;
         }
     }
 
-    Node *closestPrecedingNode(int keyHash)
-    {
-        Node *current = this;
-        while (!inInterval(keyHash, current->id, current->successor->id))
-        {
-            current = current->successor;
-        }
-        return current;
-    }
-
+    // Check if a key falls within a circular interval
     bool inInterval(int key, int start, int end)
     {
         if (start < end)
+        {
             return key > start && key <= end;
+        }
         else
+        { // Wrap around the ring
             return key > start || key <= end;
+        }
     }
 
+    // Transfer data to a target node
     void transferData(Node *targetNode)
     {
         for (const auto &[key, value] : data)
@@ -99,6 +104,7 @@ class ChordRing
 public:
     vector<Node *> nodes;
 
+    // Add a node to the ring
     void addNode(int nodeId)
     {
         Node *newNode = new Node(nodeId);
@@ -114,6 +120,7 @@ public:
         cout << "Node " << nodeId << " added to the CHORD ring." << endl;
     }
 
+    // Remove a node from the ring
     void removeNode(int nodeId)
     {
         auto it = find_if(nodes.begin(), nodes.end(), [nodeId](Node *node)
@@ -130,6 +137,7 @@ public:
         }
     }
 
+    // Display the current CHORD ring
     void displayRing()
     {
         cout << "CHORD Ring: " << endl;
@@ -141,6 +149,7 @@ public:
         }
     }
 
+    // Get a node by its ID
     Node *getNode(int nodeId)
     {
         auto it = find_if(nodes.begin(), nodes.end(), [nodeId](Node *node)
